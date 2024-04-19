@@ -71,7 +71,7 @@ class BaseAdmin:
         base_url: str = "/admin",
         title: str = "Admin",
         logo_url: Optional[str] = None,
-        templates_dir: str = "templates",
+        templates_dir: str | tuple = "templates",
         middlewares: Optional[Sequence[Middleware]] = None,
         authentication_backend: Optional[AuthenticationBackend] = None,
     ) -> None:
@@ -105,8 +105,17 @@ class BaseAdmin:
 
     def init_templating_engine(self) -> Jinja2Templates:
         templates = Jinja2Templates("templates")
+        template_directories = (
+            ["templates"]
+            if isinstance(self.templates_dir, str)
+            else self.templates_dir
+        )
+
         loaders = [
-            FileSystemLoader(self.templates_dir),
+            *[
+                FileSystemLoader(template_dir)
+                for template_dir in template_directories
+            ],
             PackageLoader("sqladmin", "templates"),
         ]
 
@@ -345,7 +354,7 @@ class Admin(BaseAdminView):
         logo_url: Optional[str] = None,
         middlewares: Optional[Sequence[Middleware]] = None,
         debug: bool = False,
-        templates_dir: str = "templates",
+        templates_dir: str | tuple = "templates",
         authentication_backend: Optional[AuthenticationBackend] = None,
     ) -> None:
         """
